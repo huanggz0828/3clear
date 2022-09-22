@@ -1,0 +1,78 @@
+.home {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+
+    button {
+        cursor: pointer;
+        transition: .2s;
+        box-shadow: 0 0 4px 0 #AAAAAA;
+
+        &:hover {
+            box-shadow: 0 0 6px 0 #AAAAAA;
+        }
+    }
+
+    .title {
+        font-size: 44px;
+        color: @color-blue;
+        margin-bottom: 80px;
+
+        strong {
+            font-size: 52px;
+
+        }
+    }
+
+    .difficulty {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .difficulty-set {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+
+        .display {
+            font-size: 40px;
+            color: @color-primary;
+            margin: 0 25px;
+        }
+
+        button {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            border: 1px solid @color-warning;
+            color: #fff;
+            border-radius: 15px;
+            background: @color-warning;
+
+            &:hover {
+                background: tint(@color-warning, 20%);
+                border: 1px solid tint(@color-warning, 20%);
+            }
+        }
+    }
+
+    .start {
+        font-weight: bold;
+        width: 200px;
+        height: 50px;
+        font-size: 28px;
+        border-radius: 25px;
+        color: #fff;
+        background: @color-primary;
+        border: 1px solid @color-primary;
+
+        &:hover {
+            background: tint(@color-primary, 20%);
+            border: 1px solid tint(@color-primary, 20%);
+        }
+    }
+}

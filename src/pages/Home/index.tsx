@@ -1,19 +1,23 @@
 import { Component, createSignal, Setter, useContext } from 'solid-js';
-import { AppContext } from '../App';
-
+import { FaSolidPlus, FaSolidMinus } from 'solid-icons/fa';
 import './Home.less';
+import useBus from '~/context';
 
 const Home: Component = () => {
-  const { setStep, difficulty, setDifficulty } = useContext(AppContext)!;
+  const { setStep, difficulty, setDifficulty } = useBus;
   return (
     <div class="home">
+      <h1 class="title">
+        <strong>3</strong>Clear
+      </h1>
+      <span class="difficulty">难度</span>
       <div class="difficulty-set">
         <button
           onClick={() => {
             setDifficulty(pre => pre - 1);
           }}
         >
-          -
+          <FaSolidMinus />
         </button>
         <div class="display">{difficulty()}</div>
         <button
@@ -21,7 +25,7 @@ const Home: Component = () => {
             setDifficulty(pre => pre + 1);
           }}
         >
-          +
+          <FaSolidPlus />
         </button>
       </div>
       <button
@@ -30,7 +34,7 @@ const Home: Component = () => {
           setStep('game');
         }}
       >
-        开始游戏
+        开 始 游 戏
       </button>
     </div>
   );

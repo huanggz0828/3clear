@@ -1,14 +1,42 @@
-import { Component, createEffect, createSignal, For, Index, Show, useContext } from 'solid-js';
-import { AppContext } from '../App';
-
+import { Component, createSignal, For, Show, useContext } from 'solid-js';
+import { RiSystemArrowLeftSLine } from 'solid-icons/ri';
+import { TbRefresh } from 'solid-icons/tb';
 import './Game.less';
+import useBus from '~/context';
 
-type tileKey = 'R' | 'O' | 'Y' | 'G' | 'C' | 'B' | 'P';
+const TILE_MAP = {
+  hotFace: '🥵',
+  heart: '💖',
+  lemon: '🍋',
+  pepper: '🌶️',
+  meat: '🥩',
+  sun: '☀️',
+  star: '⭐',
+  planet: '🪐',
+  unicorn: '🦄',
+  turtle: '🐢',
+  dragon: '🐲',
+  whale: '🐳',
+  sakura: '🌸',
+  fourLeafClover: '🍀',
+  diamond: '💎',
+} as const;
+
+type tileKey = keyof typeof TILE_MAP;
+
+interface ITile {
+  key: tileKey;
+  text: string;
+  zIndex: number;
+  id: string;
+  left: number;
+  top: number;
+}
 
 const TILE_MIN = 36;
 const TILE_MAX = 81;
 const TILE_SEC_MAX = 49;
-const SIZE = 35;
+const SIZE = 40;
 const PLACE_MAX = 7;
 
 const toDivisible = (v: number) => (v -= v % 3);
@@ -16,18 +44,10 @@ const repeat = (times: number, callback: (item: any, index: number) => void) => 
   Array.from(Array(times)).forEach(callback);
 };
 
-interface ITile {
-  key: tileKey;
-  zIndex: number;
-  id: string;
-  left: number;
-  top: number;
-}
-
 const Game: Component = () => {
-  const { difficulty, setStep } = useContext(AppContext)!;
+  const { setStep, difficulty } = useBus;
 
-  const keys: tileKey[] = ['R', 'O', 'Y', 'G', 'C', 'B', 'P'];
+  const keys = Object.keys(TILE_MAP) as Array<tileKey>;
   const getRandomKey = <T extends any>(arr: T[]) => arr[~~(arr.length * Math.random())];
   const isTopLevel = (zIndex: number) => zIndex && zIndex % 2;
 
@@ -38,16 +58,20 @@ const Game: Component = () => {
       if (isTopLevel(zIndex)) {
         const topList: ITile[] = [];
         const preList = res[zIndex - 1];
-        const keyTimes: Record<tileKey, number> = { R: 0, O: 0, Y: 0, G: 0, C: 0, B: 0, P: 0 };
-        preList.forEach(({ key }) => keyTimes[key]++);
+        const keyTimes: Partial<Record<tileKey, number>> = {};
+        preList.forEach(({ key }) => {
+          keyTimes[key] = keyTimes[key] || 0 + 1;
+        });
         let i = 0;
-        Object.keys(keyTimes).forEach(key => {
-          const value = keyTimes[key as tileKey];
+        const ketTimesList = Object.keys(keyTimes) as Array<tileKey>;
+        ketTimesList.forEach(key => {
+          const value = keyTimes[key];
           if (value && value % 3) {
             repeat(value % 3, () => {
               topList.push({
                 id: `${zIndex}-${i++}`,
-                key: key as tileKey,
+                text: TILE_MAP[key],
+                key,
                 zIndex,
                 left: 0,
                 top: 0,
@@ -62,6 +86,7 @@ const Game: Component = () => {
             repeat(3, () => {
               topList.push({
                 id: `${zIndex}-${i++}`,
+                text: TILE_MAP[key],
                 key,
                 zIndex,
                 left: 0,
@@ -89,13 +114,15 @@ const Game: Component = () => {
         const positionList = Object.keys(Array.from(Array(bottom)));
         res.push(
           Array.from(Array(bottom)).map(() => {
+            const key = getRandomKey(keys);
             const position = Number(positionList[Number(getRandomKey(positionList))]);
             const n = Math.sqrt(TILE_MAX);
             const left = (position % n) * SIZE;
             const top = ~~(position / n) * SIZE;
             return {
               id: `${zIndex}-${left},${top}`,
-              key: getRandomKey(keys),
+              text: TILE_MAP[key],
+              key,
               zIndex,
               left,
               top,
@@ -147,52 +174,61 @@ const Game: Component = () => {
     });
   };
 
-  createEffect(() => {
-    console.log(tileList(), placeList());
-  });
-
   const renderTileGroup = () => (
-    <div class="tile-group">
-      <For each={tileList()}>
-        {(levelItem, zIndex) => (
-          <div class="level" style={{ 'z-index': zIndex() }}>
-            <For each={levelItem}>
-              {item => (
-                <div
-                  classList={{
-                    tile: true,
-                    [item.key]: true,
-                    disabled: getDisabled(item),
-                  }}
-                  style={{
-                    transform: `translate(${item.left}px, ${item.top}px)`,
-                  }}
-                  onClick={() => {
-                    if (getDisabled(item)) return;
-                    handleTileClick(item);
-                  }}
-                >
-                  <Show when={getDisabled(item)}>
-                    <div class="disabled-mask"></div>
-                  </Show>
-                  {item.key}
-                </div>
-              )}
-            </For>
-          </div>
-        )}
-      </For>
+    <div class="tile-wrapper">
+      <div class="tile-group">
+        <For each={tileList()}>
+          {(levelItem, zIndex) => (
+            <div class="level" style={{ 'z-index': zIndex() }}>
+              <For each={levelItem}>
+                {item => (
+                  <div
+                    classList={{
+                      tile: true,
+                      clickable: true,
+                      [item.key]: true,
+                      disabled: getDisabled(item),
+                    }}
+                    style={{
+                      transform: `translate(${item.left}px, ${item.top}px)`,
+                    }}
+                    onClick={() => {
+                      if (getDisabled(item)) return;
+                      handleTileClick(item);
+                    }}
+                  >
+                    <Show when={getDisabled(item)}>
+                      <div class="disabled-mask"></div>
+                    </Show>
+                    {item.text}
+                  </div>
+                )}
+              </For>
+            </div>
+          )}
+        </For>
+      </div>
     </div>
   );
 
   const [placeList, setPlaceList] = createSignal<ITile[]>([]);
   const [moveList, setMoveList] = createSignal<ITile[]>([]);
 
-  const renderPlaceGroup = () => <div class="place-group">{placeList().map(({ key }) => key)}</div>;
+  // 用transform确定位置，方便动画
+  const renderPlaceGroup = () => (
+    <div class="place-group">
+      {placeList().map(({ text }) => (
+        <div class="tile">{text}</div>
+      ))}
+    </div>
+  );
 
   return (
     <div class="game">
-      <div class="header"></div>
+      <div class="header">
+        <RiSystemArrowLeftSLine class="icon-back" onClick={() => setStep('home')} />
+        <TbRefresh class="icon-refresh" />
+      </div>
       {renderTileGroup()}
       {renderPlaceGroup()}
       <div class="btn-group"></div>
