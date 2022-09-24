@@ -1,4 +1,4 @@
-import { Component, createSignal, For, Show, useContext } from 'solid-js';
+import { Component, createSignal, For, Show } from 'solid-js';
 import { RiSystemArrowLeftSLine } from 'solid-icons/ri';
 import { TbRefresh } from 'solid-icons/tb';
 import './Game.less';
@@ -41,14 +41,12 @@ interface ITile {
   status?: { type: statusType };
 }
 
-const TILE_MIN = 36;
 const TILE_MAX = 81;
 const SIDE_LENGTH = 9;
-const TILE_SEC_MAX = 49;
 const SIZE = 40;
+const GAP = 2;
 const PLACE_MAX = 7;
 
-const toDivisible = (v: number) => (v -= v % 3);
 const repeat = (times: number, callback: (item: any, index: number) => void) => {
   Array.from(Array(times)).forEach(callback);
 };
@@ -62,156 +60,87 @@ const Game: Component = () => {
 
   const initTileList = () => {
     const res: ITile[][] = [];
-    const getRandomTileNum = () => toDivisible(Math.max(TILE_MIN, ~~(Math.random() * TILE_MAX)));
-    // 闭包
-    const createGetPosition = () => {
-      const positionList = getIndexArray(TILE_MAX);
-      return () => positionList.splice(~~(positionList.length * Math.random()), 1)[0];
-    };
-    const getGridIndex = (position: number, ignore: number = -1) => {
+    const getCol = (pos: number, side: number) => pos % side;
+    const getRow = (pos: number, side: number) => ~~(pos / side);
+    const getPosByCR = (col: number, row: number) => row * SIDE_LENGTH + col;
+    const getGridIndex = (currentList: ITile[], position: number, ignore: number = -1) => {
+      const row = getRow(position, SIDE_LENGTH);
+      const col = getCol(position, SIDE_LENGTH);
+      const topLeft = currentList.find(item => item.position === getPosByCR(col - 1, row - 1));
+      const top = currentList.find(item => item.position === getPosByCR(col, row - 1));
+      const topRight = currentList.find(item => item.position === getPosByCR(col + 1, row - 1));
+      const left = currentList.find(item => item.position === getPosByCR(col - 1, row));
+      let [minRow, minCol] = [0, 0];
+      if (topLeft) {
+        const _row = getRow(topLeft.gridIndex, grid());
+        minRow = Math.max(_row, minRow);
+        if (_row > 0) {
+          minCol = Math.max(getCol(topLeft.gridIndex, grid()), minCol);
+        }
+      }
+      if (top) {
+        const _row = getRow(top.gridIndex, grid());
+        minRow = Math.max(_row, minRow);
+      }
+      if (topRight) {
+        const _row = getRow(topRight.gridIndex, grid());
+        minRow = Math.max(_row, minRow);
+      }
+      if (left) {
+        minCol = Math.max(getCol(left.gridIndex, grid()), minCol);
+      }
       const gridArr = getIndexArray(grid() * grid() - 1).filter(i => {
-        return i !== ignore;
+        const gridRow = getRow(i, grid());
+        const gridCol = getCol(i, grid());
+        return gridRow >= minRow && gridCol >= minCol && i !== ignore;
       });
       return getRandomItem(gridArr);
     };
     const getTransform = (position: number, gridIndex: number) => {
-      const left = (position % SIDE_LENGTH) * SIZE;
-      const gridLeft = (gridIndex % grid()) * (SIZE / grid());
-      const top = ~~(position / SIDE_LENGTH) * SIZE;
-      const gridTop = ~~(gridIndex / grid()) * (SIZE / grid());
+      const left = getCol(position, SIDE_LENGTH) * SIZE;
+      const gridLeft = getCol(gridIndex, grid()) * (SIZE / grid());
+      const top = getRow(position, SIDE_LENGTH) * SIZE;
+      const gridTop = getRow(gridIndex, grid()) * (SIZE / grid());
       return {
         left: left + gridLeft,
         top: top + gridTop,
       };
     };
-    const getItem = ({
-      zIndex,
-      index,
-      key,
-      position = 0,
-      gridIndex = 0,
-    }: {
-      zIndex: number;
-      index: number;
-      key: tileKey;
-      position?: number;
-      gridIndex?: number;
-      left?: number;
-      top?: number;
-    }) => ({
-      id: `${zIndex}-${index}`,
-      text: TILE_MAP[key],
-      position,
-      gridIndex,
-      zIndex,
-      key,
-      ...getTransform(position, gridIndex),
-    });
     const getLevel = (zIndex: number) => {
-      if (zIndex === 0 && difficulty() !== 1) {
-        return Array.from(Array(TILE_MAX)).map((_, index) => {
-          const key = getRandomItem(keys);
-          return getItem({
-            zIndex,
-            index,
-            key,
-            position: index,
-          });
-        });
-      } 
-      
       const preList = res[zIndex - 1];
+      const list: ITile[] = [];
+      repeat(TILE_MAX, (_, index) => {
+        const preGridIndex = preList?.find(it => it.position === index)?.gridIndex || -1;
+        const key = getRandomItem(keys);
+        const gridIndex = getGridIndex(list, index, preGridIndex);
+        if (gridIndex === undefined || Math.random() < 0.4) return;
+        list.push({
+          id: `${zIndex}-${index}`,
+          text: TILE_MAP[key],
+          position: index,
+          gridIndex,
+          zIndex,
+          key,
+          ...getTransform(index, gridIndex),
+        });
+      });
       if (isTopLevel(zIndex)) {
-        let topList: ITile[] = [];
-       
         const keyTimes: Partial<Record<tileKey, number>> = {};
         preList.forEach(({ key }) => {
           keyTimes[key] = keyTimes[key] || 0 + 1;
         });
-        let i = 0;
         const ketTimesList = Object.keys(keyTimes) as Array<tileKey>;
         ketTimesList.forEach(key => {
           const value = keyTimes[key];
-          if (!(value && value % 3)) return;
-          const reminder = 3 - (value % 3);
-          if (topList.length + reminder > TILE_MAX) {
+          if (value && value % 3) {
             repeat(value % 3, () => {
-              const deleteIndex = topList.findIndex(item => key === item.key);
-              topList.splice(deleteIndex, 1);
+              const deleteIndex = list.findIndex(it => it.key === key);
+              list.splice(deleteIndex, 1);
             });
           }
-          repeat(reminder, () => {
-            topList.push(
-              getItem({
-                key,
-                zIndex,
-                index: i++,
-              })
-            );
-          });
-        });
-        if (preList.length < TILE_MIN) {
-          repeat(toDivisible((getRandomTileNum() - preList.length) / 3), () => {
-            const key = getRandomItem(keys);
-            repeat(3, () => {
-              topList.push(
-                getItem({
-                  key,
-                  zIndex,
-                  index: i++,
-                })
-              );
-            });
-          });
-        }
-        const getPosition = createGetPosition();
-        const position = getPosition();
-        const preGridIndex = preList.find(it => it.position === position)?.gridIndex || -1;
-        topList = topList.map(item => {
-          return {
-            ...item,
-            position,
-            gridIndex: getGridIndex(position, preGridIndex),
-          };
-        });
-        return topList;
-      } else if (zIndex === difficulty()) {
-        const preList = res[zIndex - 1];
-        const getPosition = createGetPosition();
-        const position = getPosition();
-        const preGridIndex = preList.find(it => it.position === position)?.gridIndex || -1;
-        const list: ITile[] = [];
-        let i = 0;
-        repeat(toDivisible(getRandomTileNum() / 3), () => {
-          repeat(3, () => {
-            list.push(
-              getItem({
-                key: getRandomItem(keys),
-                position: getPosition(),
-                gridIndex: getGridIndex(position, preGridIndex),
-                zIndex,
-                index: i++,
-              })
-            );
-          });
-        });
-        return list;
-      } else {
-        // 主层
-        const getPosition = createGetPosition();
-        const position = getPosition();
-        const preGridIndex = preList.find(it => it.position === position)?.gridIndex || -1;
-        return Array.from(Array(2)).map((_, index) => {
-          const key = getRandomItem(keys);
-          return getItem({
-            gridIndex: getGridIndex(getPosition(), preGridIndex),
-            position,
-            key,
-            zIndex,
-            index,
-          });
         });
       }
+      return list;
     };
 
     repeat(difficulty(), (_, zIndex) => {
@@ -225,15 +154,15 @@ const Game: Component = () => {
   const getDisabled = (item: ITile) => {
     if (item.zIndex === tileList().length - 1) return false;
     const { left, top } = item;
-    const right = left + SIZE;
-    const bottom = top + SIZE;
+    const right = left + SIZE - GAP;
+    const bottom = top + SIZE - GAP;
     for (let i = item.zIndex + 1; i < tileList().length; i++) {
       const level = tileList()[i];
       for (let j = 0; j < level.length; j++) {
         const levelItem = level[j];
         const { left: _left, top: _top } = levelItem;
-        const _right = _left + SIZE;
-        const _bottom = _top + SIZE;
+        const _right = _left + SIZE - GAP;
+        const _bottom = _top + SIZE - GAP;
         const nonIntersect = _right < left || _left > right || _bottom < top || _top > bottom;
         // 相交
         if (!nonIntersect) return true;
@@ -290,7 +219,7 @@ const Game: Component = () => {
     <div class="game">
       <div class="header">
         <RiSystemArrowLeftSLine class="icon-back" onClick={() => setStep('home')} />
-        <TbRefresh class="icon-refresh" />
+        <TbRefresh class="icon-refresh" onClick={() => setTileList(initTileList())} />
       </div>
       {renderTileGroup()}
       {renderPlaceGroup()}
