@@ -4,7 +4,7 @@ import path from 'path';
 
 export default ({ mode }: any) =>
   defineConfig({
-    base: mode === 'production' ? 'https://huang-guanzhong.gitee.io/' : '/',
+    base: mode === 'production' ? 'https://huang-guanzhong.gitee.io/3clear/' : '/',
     plugins: [solidPlugin()],
     resolve: {
       alias: {
