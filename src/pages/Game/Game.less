@@ -37,6 +37,7 @@
     }
 
     .tile {
+        position: relative;
         font-size: 18px;
         width: 36px;
         height: 36px;
@@ -45,10 +46,23 @@
         background: #fff;
         text-align: center;
         line-height: 30px;
-        border-radius: 3px;
+        border-radius: 4px;
         cursor: pointer;
         margin: 1px;
         transition: .2s;
+
+        &::after {
+            position: absolute;
+            z-index: -2;
+            background: tint(#FFB6C1, 80%);
+            top: 0;
+            left: 0;
+            content: '';
+            width: 100%;
+            height: 29px;
+            border-bottom: 1px solid #eeeeee;
+            border-radius: 4px;
+        }
 
         &.clickable {
             &:not(.disabled):hover {
@@ -69,7 +83,7 @@
                 top: 0;
                 width: 100%;
                 height: 100%;
-                background: #cccccc;
+                background: #bbbbbb;
                 opacity: .5;
             }
         }
