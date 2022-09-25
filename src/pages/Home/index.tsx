@@ -14,7 +14,7 @@ const Home: Component = () => {
       <div class="difficulty-set">
         <button
           onClick={() => {
-            setDifficulty(pre => pre - 1);
+            setDifficulty(pre => Math.max(pre - 1, 1));
           }}
         >
           <FaSolidMinus />
