@@ -3,7 +3,8 @@ import { RiSystemArrowLeftSLine } from 'solid-icons/ri';
 import { TbRefresh } from 'solid-icons/tb';
 import './Game.less';
 import useBus from '~/context';
-import { Transition } from 'solid-transition-group';
+import { TransitionGroup } from 'solid-transition-group';
+import { findLastIndex } from 'lodash';
 
 const TILE_TEXT_MAP = {
   hotFace: '🥵',
@@ -40,11 +41,18 @@ interface ITile {
   id: string;
   left: number;
   top: number;
-  status: { type: statusType; index?: number };
+  status?: statusType;
 }
 
+interface ICollect extends ITile {
+  startX: number;
+  startY: number;
+}
+
+const VIEWPORT_WIDTH = 440;
 const SIZE = 50;
 const GAP = 2;
+const COLLECT_PADDING = 20;
 const PLACE_MAX = 7;
 
 const getIndexArray = (length: number) => Array.from(Array(length)).map((_, i) => i);
@@ -52,7 +60,9 @@ const getRandomItem = <T extends any>(arr: T[]) => arr[~~(arr.length * Math.rand
 
 const Game: Component = () => {
   const { setStep, side, level, grid } = useBus;
-  const sideLength = () => (side() + 1) * SIZE;
+  const sideLength = () => (side() + 1) * 50;
+  const keys = Object.keys(TILE_TEXT_MAP) as tileKey[];
+  const getRandomItem = <T extends any>(arr: T[]) => arr[~~(arr.length * Math.random())];
 
   const initTileList = () => {
     const getCol = (pos: number, side: number) => (pos ? pos % side : 0);
@@ -129,7 +139,7 @@ const Game: Component = () => {
             zIndex,
             key,
             ...getTransform(index, gridIndex),
-            status: { type: statusType.PENDING },
+            status: statusType.PENDING,
           });
         }
       }
@@ -161,7 +171,9 @@ const Game: Component = () => {
   };
 
   const [tileList, setTileList] = createSignal<ITile[][]>(initTileList());
-  const [collectList, setCollectList] = createSignal<ITile[]>([]);
+  const [collectList, setCollectList] = createSignal<ICollect[]>([]);
+  let tileGroupRef: HTMLDivElement | undefined;
+  let collectGroupRef: HTMLDivElement | undefined;
 
   const getDisabled = (item: ITile) => {
     if (item.zIndex === tileList().length - 1) return false;
@@ -172,6 +184,7 @@ const Game: Component = () => {
       const level = tileList()[i];
       for (let j = 0; j < level.length; j++) {
         const levelItem = level[j];
+        if (levelItem.status !== statusType.PENDING) continue;
         const { left: _left, top: _top } = levelItem;
         const _right = _left + SIZE - GAP;
         const _bottom = _top + SIZE - GAP;
@@ -183,20 +196,63 @@ const Game: Component = () => {
     return false;
   };
 
-  const handleTileClick = (item: ITile) => {
+  const handleTileClick = (item: ITile, index: number) => {
     setTileList(pre => {
       const _pre = [...pre];
-      _pre[item.zIndex] = _pre[item.zIndex].filter(it => it.id !== item.id);
+      Object.assign(_pre[item.zIndex][index], { status: statusType.COLLECT });
       return _pre;
     });
-    setTimeout(() => {
-      setCollectList(pre => pre.map((item, index) => ({ ...item, top: 0, left: index * 52 })));
-    }, 200);
+    setCollectList(pre => {
+      const _pre = [...pre];
+      const canClear = _pre.filter(it => it.key === item.key).length === 2;
+      if (canClear) {
+        return _pre.filter(it => it.key !== item.key);
+      }
+
+      const sameIndex = findLastIndex(_pre, it => it.key === item.key);
+      const startY =
+        item.top +
+        tileGroupRef!.getBoundingClientRect().top -
+        collectGroupRef!.getBoundingClientRect().top;
+      const startX =
+        item.left + sideLength() - (VIEWPORT_WIDTH - sideLength()) / 2 + COLLECT_PADDING;
+
+      if (sameIndex === -1) {
+        _pre.push({
+          ...item,
+          startX: startX - _pre.length * SIZE,
+          startY,
+        });
+      } else {
+        _pre.splice(sameIndex + 1, 0, {
+          ...item,
+          startX: startX - sameIndex * SIZE,
+          startY,
+        });
+      }
+      return _pre;
+    });
   };
 
-  const renderTileGroup = () => (
-    <div class="tile-wrapper">
-      <div class="tile-group" style={{ width: `${sideLength()}px`, height: `${sideLength()}px` }}>
+  const [moveList, setMoveList] = createSignal<ITile[]>([]);
+
+  return (
+    <div class="game">
+      <div class="header">
+        <RiSystemArrowLeftSLine class="icon-back" onClick={() => setStep('home')} />
+        <TbRefresh
+          class="icon-refresh"
+          onClick={() => {
+            setCollectList([]);
+            setTileList(initTileList());
+          }}
+        />
+      </div>
+      <div
+        class="tile-group"
+        style={{ width: `${sideLength()}px`, height: `${sideLength()}px` }}
+        ref={tileGroupRef}
+      >
         <For each={tileList()}>
           {(levelItem, zIndex) => (
             <div class="level" style={{ 'z-index': zIndex() }}>
@@ -205,21 +261,22 @@ const Game: Component = () => {
                   <div
                     classList={{
                       tile: true,
-                      clickable: item.status.type === statusType.PENDING,
+                      clickable: true,
                       disabled: getDisabled(item),
                     }}
                     style={{
+                      display: item.status === statusType.PENDING ? 'block' : 'none',
                       transform: `translate(${item.left}px, ${item.top}px)`,
                     }}
                     onClick={() => {
                       if (getDisabled(item)) return;
-                      handleTileClick(item);
+                      handleTileClick(item, index());
                     }}
                   >
                     <Show when={getDisabled(item)}>
                       <div class="disabled-mask"></div>
                     </Show>
-                    {item.text}
+                    <span class="text">{item.text}</span>
                   </div>
                 )}
               </For>
@@ -227,36 +284,41 @@ const Game: Component = () => {
           )}
         </For>
       </div>
-    </div>
-  );
 
-  const [moveList, setMoveList] = createSignal<ITile[]>([]);
-
-  const renderPlaceGroup = () => (
-    <div class="place-group">
-      <For each={collectList()}>
-        {item => (
-          <div
-            classList={{
-              tile: true,
-            }}
-          >
-            {item.text}
-          </div>
-        )}
-      </For>
-    </div>
-  );
-
-  return (
-    <div class="game">
-      <div class="header">
-        <RiSystemArrowLeftSLine class="icon-back" onClick={() => setStep('home')} />
-        <TbRefresh class="icon-refresh" onClick={() => setTileList(initTileList())} />
+      <div class="collect-group" ref={collectGroupRef}>
+        <TransitionGroup
+          name="fade"
+          onEnter={async (el, done) => {
+            if (!(el instanceof HTMLElement)) return;
+            const a = el.animate(
+              [
+                { transform: `translate(${el.dataset.startx}px,${el.dataset.starty}px)` },
+                { transform: `translate(0px,0px)` },
+              ],
+              {
+                duration: 350,
+                easing: 'ease',
+              }
+            );
+            a.finished.then(done);
+          }}
+        >
+          <For each={collectList()}>
+            {item => (
+              <div
+                classList={{
+                  tile: true,
+                }}
+                data-startX={item.startX}
+                data-startY={item.startY}
+                data-key={item.key}
+              >
+                <span class="text">{item.text}</span>
+              </div>
+            )}
+          </For>
+        </TransitionGroup>
       </div>
-      <Transition></Transition>
-      {renderTileGroup()}
-      {renderPlaceGroup()}
       <div class="btn-group"></div>
     </div>
   );
