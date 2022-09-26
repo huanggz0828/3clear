@@ -14,9 +14,7 @@ function createBus() {
     setStep,
     difficulty,
     setDifficulty,
-    side: () => Math.min(SIDE_MAX, difficulty() - 1 + SIDE_MIN),
-    level: () => difficulty() * 2,
-    grid: () => Math.ceil(Math.sqrt(difficulty() * 2)) ** 2,
+    side: () => Math.min(SIDE_MAX, ~~(difficulty() / 4) + SIDE_MIN),
   };
 }
 

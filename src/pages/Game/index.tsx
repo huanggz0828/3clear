@@ -1,9 +1,9 @@
-import { Component, createSignal, For, Show } from 'solid-js';
+import { Component, createEffect, createSignal, For, on, Show } from 'solid-js';
 import { RiSystemArrowLeftSLine } from 'solid-icons/ri';
 import { TbRefresh } from 'solid-icons/tb';
 import useBus from '~/context';
 import { TransitionGroup } from 'solid-transition-group';
-import { findLastIndex, random, sample, times } from 'lodash';
+import { findLastIndex, forEach, random, sample, sampleSize, size, times } from 'lodash';
 
 import './Game.less';
 
@@ -54,10 +54,11 @@ const VIEWPORT_WIDTH = 440;
 const SIZE = 50;
 const GAP = 2;
 const COLLECT_PADDING = 20;
+const GRID = 4;
 const PLACE_MAX = 7;
 
 const Game: Component = () => {
-  const { setStep, side, level, grid } = useBus;
+  const { setStep, side, difficulty } = useBus;
   const sideLength = () => (side() + 1) * 50;
 
   const initTileList = () => {
@@ -73,37 +74,37 @@ const Game: Component = () => {
       const left = currentList.find(item => item.position === getPosByCR(col - 1, row));
       let [minRow, minCol] = [0, 0];
       if (topLeft) {
-        const _row = getRow(topLeft.gridIndex, grid());
+        const _row = getRow(topLeft.gridIndex, GRID);
         minRow = Math.max(_row, minRow);
         if (_row > 0) {
-          minCol = Math.max(getCol(topLeft.gridIndex, grid()), minCol);
+          minCol = Math.max(getCol(topLeft.gridIndex, GRID), minCol);
         }
       }
       if (top) {
-        const _row = getRow(top.gridIndex, grid());
+        const _row = getRow(top.gridIndex, GRID);
         minRow = Math.max(_row, minRow);
       }
       if (topRight) {
-        const _row = getRow(topRight.gridIndex, grid());
+        const _row = getRow(topRight.gridIndex, GRID);
         minRow = Math.max(_row, minRow);
       }
       if (left) {
-        minCol = Math.max(getCol(left.gridIndex, grid()), minCol);
+        minCol = Math.max(getCol(left.gridIndex, GRID), minCol);
       }
-      const gridArr = times(grid() * grid() - 1).filter(i => {
-        const gridRow = getRow(i, grid());
-        const gridCol = getCol(i, grid());
+      const gridArr = times(GRID * GRID - 1).filter(i => {
+        const gridRow = getRow(i, GRID);
+        const gridCol = getCol(i, GRID);
         return gridRow >= minRow && gridCol >= minCol && i !== ignore;
       });
       return sample(gridArr)!;
     };
 
     const getTransform = (position: number, gridIndex: number) => {
-      const gridLength = grid() ? SIZE / grid() : 0;
+      const gridLength = GRID ? SIZE / GRID : 0;
       const left = getCol(position, side()) * SIZE;
-      const gridLeft = getCol(gridIndex, grid()) * gridLength;
+      const gridLeft = getCol(gridIndex, GRID) * gridLength;
       const top = getRow(position, side()) * SIZE;
-      const gridTop = getRow(gridIndex, grid()) * gridLength;
+      const gridTop = getRow(gridIndex, GRID) * gridLength;
       return {
         left: left + gridLeft,
         top: top + gridTop,
@@ -112,18 +113,29 @@ const Game: Component = () => {
 
     const res: ITile[][] = [];
     let remainder: tileKey[] = [];
-    const keyTimes: Partial<Record<tileKey, number>> = {};
-    for (let zIndex = 0; zIndex < level(); zIndex++) {
+    const keyCount: Partial<Record<tileKey, number>> = {};
+    // 由于采用相邻层内有解的算法，所以保证层数为双数，代码更为简单，否则还要对单数做特殊处理
+    const level = Math.ceil(difficulty() / 2) * 2;
+
+    // 挑选元素的种类，与边长成正比
+    const keyList = sampleSize(
+      Object.keys(TILE_TEXT_MAP) as tileKey[],
+      Math.min(~~(side() ** 2 / 2), size(TILE_TEXT_MAP))
+    );
+    for (let zIndex = 0; zIndex < level; zIndex++) {
       const preList = res[zIndex - 1];
       const list: ITile[] = [];
       for (let index = 0; index < side() ** 2; index++) {
         const preGridIndex = preList?.find(it => it.position === index)?.gridIndex || -1;
+        // 保证相邻层内有解
         const key = remainder.length
           ? remainder.splice(random(0, remainder.length - 1), 1)[0]
-          : sample(Object.keys(TILE_TEXT_MAP) as tileKey[])!;
-        keyTimes[key] = (keyTimes[key] || 0) + 1;
+          : sample(keyList)!;
+        keyCount[key] = (keyCount[key] || 0) + 1;
         const gridIndex = getGridIndex(list, index, preGridIndex);
-        if (gridIndex !== undefined || Math.random() > 0.5) {
+        // 密度：元素生成概率，与难度成正比，无限趋近1
+        const density = Math.random() > 1 - 2 / Math.sqrt(difficulty());
+        if (gridIndex !== undefined && density) {
           list.push({
             id: `${zIndex}-${index}`,
             text: TILE_TEXT_MAP[key],
@@ -138,33 +150,48 @@ const Game: Component = () => {
       }
       res.push(list);
 
-      (Object.keys(keyTimes) as tileKey[]).forEach(key => {
-        const value = keyTimes[key];
+      (Object.keys(keyCount) as tileKey[]).forEach(key => {
+        const value = keyCount[key];
         if (value && value % 3) {
-          for (let i = 0; i < 3 - (value % 3); i++) {
-            remainder.push(key);
-          }
+          times(3 - (value % 3), () => remainder.push(key));
         }
       });
     }
 
-    remainder.forEach(key => {
-      let i = res.length - 1;
-      while (i >= 0) {
-        const deleteIndex = res[i].findIndex(item => item.key === key);
-        if (deleteIndex !== -1) {
-          res[i].splice(deleteIndex, 1);
-          break;
-        }
-        i--;
+    console.log(remainder);
+
+    console.log(keyCount);
+
+    forEach(keyCount, (count, key) => {
+      if (count && count % 3) {
+        console.log(key, count, count % 3);
+        times(count % 3, () => {
+          let i = res.length - 1;
+          while (i >= 0) {
+            const deleteIndex = res[i].findIndex(item => item.key === key);
+            if (deleteIndex !== -1) {
+              res[i].splice(deleteIndex, 1);
+              break;
+            }
+            i--;
+          }
+        });
       }
     });
+
+    console.log(
+      res.flat().reduce((res, item) => {
+        res[item.key] = (res[item.key] || 0) + 1;
+        return res;
+      }, {})
+    );
 
     return res;
   };
 
   const [tileList, setTileList] = createSignal<ITile[][]>(initTileList());
   const [collectList, setCollectList] = createSignal<ICollect[]>([]);
+  const [clickFlag, setClickFlag] = createSignal(0);
   let tileGroupRef: HTMLDivElement | undefined;
   let collectGroupRef: HTMLDivElement | undefined;
 
@@ -197,10 +224,10 @@ const Game: Component = () => {
     });
     setCollectList(pre => {
       const _pre = [...pre];
-      const canClear = _pre.filter(it => it.key === item.key).length === 2;
-      if (canClear) {
-        return _pre.filter(it => it.key !== item.key);
-      }
+      // const canClear = _pre.filter(it => it.key === item.key).length === 2;
+      // if (canClear) {
+      //   return _pre.filter(it => it.key !== item.key);
+      // }
 
       const sameIndex = findLastIndex(_pre, it => it.key === item.key);
       const startY =
@@ -224,7 +251,26 @@ const Game: Component = () => {
       }
       return _pre;
     });
+    setClickFlag(pre => pre + 1);
   };
+
+  createEffect(
+    on(
+      clickFlag,
+      () => {
+        collectList().reduce((res: Partial<Record<tileKey, string[]>>, item) => {
+          res[item.key] ? res[item.key]!.push(item.id) : (res[item.key] = [item.id]);
+          if (res[item.key]?.length === 3) {
+            setTimeout(() => {
+              setCollectList(pre => pre.filter(it => !res[item.key]!.includes(it.id)));
+            }, 300);
+          }
+          return res;
+        }, {});
+      },
+      { defer: true }
+    )
+  );
 
   const [moveList, setMoveList] = createSignal<ITile[]>([]);
 

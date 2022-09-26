@@ -22,7 +22,7 @@ const Home: Component = () => {
         <div class="display">{difficulty()}</div>
         <button
           onClick={() => {
-            setDifficulty(pre => pre + 1);
+            setDifficulty(pre => Math.min(pre + 1, 100));
           }}
         >
           <FaSolidPlus />

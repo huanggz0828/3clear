@@ -18,12 +18,12 @@
     }
 
     .title {
-        font-size: 44px;
+        font-size: 64px;
         color: @color-blue;
         margin-bottom: 80px;
 
         strong {
-            font-size: 52px;
+            font-size: 66px;
 
         }
     }
@@ -41,7 +41,8 @@
         .display {
             font-size: 40px;
             color: @color-primary;
-            margin: 0 25px;
+            width: 100px;
+            text-align: center;
         }
 
         button {
@@ -52,27 +53,32 @@
             color: #fff;
             border-radius: 15px;
             background: @color-warning;
+            box-shadow: 0 0 8px 0 #AAAAAA;
 
             &:hover {
                 background: tint(@color-warning, 20%);
                 border: 1px solid tint(@color-warning, 20%);
+                transform: translateY(1px);
+                box-shadow: 0 0 8px 0 #999999;
             }
         }
     }
 
     .start {
         font-weight: bold;
-        width: 200px;
+        width: 210px;
         height: 50px;
         font-size: 28px;
         border-radius: 25px;
         color: #fff;
         background: @color-primary;
         border: 1px solid @color-primary;
+        box-shadow: 0 0 8px 0 #AAAAAA;
 
         &:hover {
             background: tint(@color-primary, 20%);
             border: 1px solid tint(@color-primary, 20%);
+            transform: translateY(1px);
         }
     }
 }
