@@ -103,7 +103,7 @@
     }
 
 
-    .tile-group {
+    .pending-group {
         position: relative;
         margin: 0 auto;
 
@@ -124,13 +124,13 @@
         padding: 20px;
         min-height: 88px;
 
-        .fade-enter-active {
+        .collect-transition-enter-active {
             z-index: 999;
         }
 
-        .fade-exit-active,
-        .fade-exit-to {
+        .collect-transition-exit-active {
             position: absolute;
+            transition: ease-in .3s .5s;
             opacity: 0;
         }
     }

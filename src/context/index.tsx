@@ -6,7 +6,7 @@ const SIDE_MIN = 3;
 const SIDE_MAX = 7;
 
 function createBus() {
-  const [step, setStep] = createSignal<page>('game');
+  const [step, setStep] = createSignal<page>('home');
   const [difficulty, setDifficulty] = createSignal<number>(1);
 
   return {

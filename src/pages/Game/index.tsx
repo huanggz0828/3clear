@@ -1,10 +1,11 @@
 import { Component, createSignal, For, Show } from 'solid-js';
 import { RiSystemArrowLeftSLine } from 'solid-icons/ri';
 import { TbRefresh } from 'solid-icons/tb';
-import './Game.less';
 import useBus from '~/context';
 import { TransitionGroup } from 'solid-transition-group';
-import { findLastIndex } from 'lodash';
+import { findLastIndex, random, sample, times } from 'lodash';
+
+import './Game.less';
 
 const TILE_TEXT_MAP = {
   hotFace: '🥵',
@@ -55,14 +56,9 @@ const GAP = 2;
 const COLLECT_PADDING = 20;
 const PLACE_MAX = 7;
 
-const getIndexArray = (length: number) => Array.from(Array(length)).map((_, i) => i);
-const getRandomItem = <T extends any>(arr: T[]) => arr[~~(arr.length * Math.random())];
-
 const Game: Component = () => {
   const { setStep, side, level, grid } = useBus;
   const sideLength = () => (side() + 1) * 50;
-  const keys = Object.keys(TILE_TEXT_MAP) as tileKey[];
-  const getRandomItem = <T extends any>(arr: T[]) => arr[~~(arr.length * Math.random())];
 
   const initTileList = () => {
     const getCol = (pos: number, side: number) => (pos ? pos % side : 0);
@@ -94,23 +90,20 @@ const Game: Component = () => {
       if (left) {
         minCol = Math.max(getCol(left.gridIndex, grid()), minCol);
       }
-      const gridArr = getIndexArray(grid() * grid() - 1).filter(i => {
+      const gridArr = times(grid() * grid() - 1).filter(i => {
         const gridRow = getRow(i, grid());
         const gridCol = getCol(i, grid());
         return gridRow >= minRow && gridCol >= minCol && i !== ignore;
       });
-      return getRandomItem(gridArr);
+      return sample(gridArr)!;
     };
+
     const getTransform = (position: number, gridIndex: number) => {
       const gridLength = grid() ? SIZE / grid() : 0;
       const left = getCol(position, side()) * SIZE;
       const gridLeft = getCol(gridIndex, grid()) * gridLength;
       const top = getRow(position, side()) * SIZE;
       const gridTop = getRow(gridIndex, grid()) * gridLength;
-      console.log({
-        left: left + gridLeft,
-        top: top + gridTop,
-      });
       return {
         left: left + gridLeft,
         top: top + gridTop,
@@ -126,20 +119,20 @@ const Game: Component = () => {
       for (let index = 0; index < side() ** 2; index++) {
         const preGridIndex = preList?.find(it => it.position === index)?.gridIndex || -1;
         const key = remainder.length
-          ? remainder.splice(~~(remainder.length * Math.random()), 1)[0]
-          : getRandomItem(Object.keys(TILE_TEXT_MAP) as tileKey[]);
+          ? remainder.splice(random(0, remainder.length - 1), 1)[0]
+          : sample(Object.keys(TILE_TEXT_MAP) as tileKey[])!;
         keyTimes[key] = (keyTimes[key] || 0) + 1;
         const gridIndex = getGridIndex(list, index, preGridIndex);
-        if (gridIndex !== undefined || Math.random() > 0.4) {
+        if (gridIndex !== undefined || Math.random() > 0.5) {
           list.push({
             id: `${zIndex}-${index}`,
             text: TILE_TEXT_MAP[key],
             position: index,
+            status: statusType.PENDING,
             gridIndex,
             zIndex,
             key,
             ...getTransform(index, gridIndex),
-            status: statusType.PENDING,
           });
         }
       }
@@ -214,8 +207,7 @@ const Game: Component = () => {
         item.top +
         tileGroupRef!.getBoundingClientRect().top -
         collectGroupRef!.getBoundingClientRect().top;
-      const startX =
-        item.left + sideLength() - (VIEWPORT_WIDTH - sideLength()) / 2 + COLLECT_PADDING;
+      const startX = item.left - SIZE + (VIEWPORT_WIDTH - sideLength()) / 2 + COLLECT_PADDING;
 
       if (sameIndex === -1) {
         _pre.push({
@@ -249,7 +241,7 @@ const Game: Component = () => {
         />
       </div>
       <div
-        class="tile-group"
+        class="pending-group"
         style={{ width: `${sideLength()}px`, height: `${sideLength()}px` }}
         ref={tileGroupRef}
       >
@@ -287,7 +279,7 @@ const Game: Component = () => {
 
       <div class="collect-group" ref={collectGroupRef}>
         <TransitionGroup
-          name="fade"
+          name="collect-transition"
           onEnter={async (el, done) => {
             if (!(el instanceof HTMLElement)) return;
             const a = el.animate(
