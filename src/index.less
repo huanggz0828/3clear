@@ -17,6 +17,52 @@ html {
     #root {
       .wh100();
       max-width: 440px;
+
+      .app {
+        .wh100();
+
+        button {
+          cursor: pointer;
+          transition: .2s;
+          box-shadow: 0 0 4px 0 #AAAAAA;
+
+          &:hover {
+            box-shadow: 0 0 6px 0 #AAAAAA;
+          }
+        }
+
+        button.warning {
+          border: 1px solid @color-warning;
+          color: #fff;
+          border-radius: 15px;
+          background: @color-warning;
+          box-shadow: 0 0 8px 0 #AAAAAA;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+
+          &:hover {
+            background: tint(@color-warning, 20%);
+            border: 1px solid tint(@color-warning, 20%);
+            transform: translateY(1px);
+            box-shadow: 0 0 8px 0 #999999;
+          }
+        }
+
+        button.primary {
+          color: #fff;
+          background: @color-primary;
+          border: 1px solid @color-primary;
+          box-shadow: 0 0 8px 0 #AAAAAA;
+
+          &:hover {
+            background: tint(@color-primary, 20%);
+            border: 1px solid tint(@color-primary, 20%);
+            transform: translateY(1px);
+          }
+        }
+      }
     }
   }
 }

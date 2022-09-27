@@ -1,22 +1,19 @@
-import { Component, Match, Switch } from 'solid-js';
+import { Component, Show } from 'solid-js';
 
-import './App.less';
-import useBus from './context';
+import useAppData from './utils/useAppData';
 import Game from './pages/Game';
 import Home from './pages/Home';
 
 const App: Component = () => {
-  const { step } = useBus;
+  const { step } = useAppData;
   return (
     <div class="app">
-      <Switch>
-        <Match when={step() === 'home'}>
-          <Home />
-        </Match>
-        <Match when={step() === 'game'}>
-          <Game />
-        </Match>
-      </Switch>
+      <Show when={step() === 'home'}>
+        <Home />
+      </Show>
+      <Show when={step() === 'game'}>
+        <Game />
+      </Show>
     </div>
   );
 };

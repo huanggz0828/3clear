@@ -1,10 +1,10 @@
-import { Component, createSignal, Setter, useContext } from 'solid-js';
+import { Component } from 'solid-js';
 import { FaSolidPlus, FaSolidMinus } from 'solid-icons/fa';
 import './Home.less';
-import useBus from '~/context';
+import useAppData from '~/utils/useAppData';
 
 const Home: Component = () => {
-  const { setStep, difficulty, setDifficulty } = useBus;
+  const { setStep, difficulty, setDifficulty } = useAppData;
   return (
     <div class="home">
       <h1 class="title">
@@ -13,6 +13,7 @@ const Home: Component = () => {
       <span class="difficulty">难度</span>
       <div class="difficulty-set">
         <button
+          class="warning"
           onClick={() => {
             setDifficulty(pre => Math.max(pre - 1, 1));
           }}
@@ -21,6 +22,7 @@ const Home: Component = () => {
         </button>
         <div class="display">{difficulty()}</div>
         <button
+          class="warning"
           onClick={() => {
             setDifficulty(pre => Math.min(pre + 1, 100));
           }}
@@ -29,7 +31,7 @@ const Home: Component = () => {
         </button>
       </div>
       <button
-        class="start"
+        class="start primary"
         onClick={() => {
           setStep('game');
         }}
