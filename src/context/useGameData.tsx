@@ -13,7 +13,7 @@ const createGameData = () => {
     [gameMode(), localData().level]
   );
 
-  const side = () => Math.min(SIDE_MAX, ~~(level() / 4) + SIDE_MIN);
+  const side = () => Math.min(SIDE_MAX, ~~(level() / 2) + SIDE_MIN);
   const sideLength = () => (side() + 1) * 50;
 
   const [tileList, setTileList] = createSignal<ITile[][]>([]);

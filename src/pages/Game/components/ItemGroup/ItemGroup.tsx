@@ -1,5 +1,5 @@
 import { ImShuffle, ImUndo2, ImUpload } from 'solid-icons/im';
-import { assign, last, random, sortBy } from 'lodash';
+import { assign, last, random, shuffle, sortBy } from 'lodash';
 import useGameData from '~/context/useGameData';
 import useAppData from '~/context/useAppData';
 import { TILE_STATUS } from '~/utils/interfaces';
@@ -30,7 +30,7 @@ const ItemGroup = () => {
     const { x: pgX, y: pgY } = pendingGroupRef()!.getBoundingClientRect();
     const endX = pgX - elX + backItem.left;
     const endY = pgY - elY + backItem.top;
-    el.style.zIndex = '101';
+    el.style.zIndex = '201';
     const a = el.animate(
       [
         { transform: `translate(0px,0px)` },
@@ -71,10 +71,15 @@ const ItemGroup = () => {
       { duration: 1500, easing: 'ease' }
     );
     setTimeout(() => {
-      const flatArr = tileList().flat();
+      const flatArr = tileList()
+        .flat()
+        .filter(item => item.status === TILE_STATUS.PENDING);
       setTileList(pre => {
         return pre.map(levelItem =>
           levelItem.map(item => {
+            if (item.status !== TILE_STATUS.PENDING) {
+              return item;
+            }
             const sampleItem = flatArr.splice(random(0, flatArr.length - 1), 1)[0];
             return {
               ...item,

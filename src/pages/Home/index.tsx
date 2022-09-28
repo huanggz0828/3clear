@@ -1,6 +1,6 @@
 import { Component, Show } from 'solid-js';
 import { FaSolidPlus, FaSolidMinus } from 'solid-icons/fa';
-import useAppData from '~/context/useAppData';
+import useAppData, { LEVEL_MAX } from '~/context/useAppData';
 import { GAME_MODE, PAGE } from '~/utils/interfaces';
 
 import './Home.less';
@@ -48,11 +48,22 @@ const Home: Component = () => {
           >
             <FaSolidMinus />
           </button>
-          <div class="display">{difficulty()}</div>
+          <input
+            type="text"
+            value={`${difficulty()}`}
+            onChange={e => {
+              const val = ~~Number(e.currentTarget.value) || 1;
+              setDifficulty(Math.min(val, LEVEL_MAX));
+            }}
+            onBlur={e => {
+              const val = ~~Number(e.currentTarget.value) || 1;
+              setDifficulty(Math.min(val, LEVEL_MAX));
+            }}
+          />
           <button
             class="warning"
             onClick={() => {
-              setDifficulty(pre => pre + 1);
+              setDifficulty(pre => Math.min(pre + 1, LEVEL_MAX));
             }}
           >
             <FaSolidPlus />

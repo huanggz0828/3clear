@@ -1,7 +1,7 @@
 import { createSignal, createRoot, createEffect } from 'solid-js';
 import { GAME_MODE, ILocalData, PAGE } from '~/utils/interfaces';
 
-export const LEVEL_MAX = 100;
+export const LEVEL_MAX = 30;
 export const COLLECT_MAX = 14;
 const DEFAULT_LOCAL_DATA = {
   level: 1,
@@ -19,8 +19,12 @@ const createAppData = () => {
   const [localData, setLocalData] = createSignal<ILocalData>(DEFAULT_LOCAL_DATA);
   const [difficulty, setDifficulty] = createSignal<number>(1);
 
-  const localDataJSON = localStorage.getItem('localData');
   createEffect(() => {
+    readLocalData();
+  });
+
+  const readLocalData = () => {
+    const localDataJSON = localStorage.getItem('localData');
     if (gameMode() === GAME_MODE.CAREER) {
       if (localDataJSON) {
         const _localData = JSON.parse(localDataJSON);
@@ -32,19 +36,12 @@ const createAppData = () => {
     } else {
       setLocalData({ ...DEFAULT_LOCAL_DATA, leftCountShow: true });
     }
-  });
+  };
 
   const resetProgress = () => {
     setLocalData(DEFAULT_LOCAL_DATA);
     localStorage.setItem('localData', JSON.stringify(DEFAULT_LOCAL_DATA));
   };
-
-  const setLocalSuccess = () => {
-    localStorage.setItem(
-      'localData',
-      JSON.stringify({ ...localData(), level: localData().level + 1 })
-    );
-  }
 
   return {
     gameMode,
@@ -56,7 +53,7 @@ const createAppData = () => {
     localData,
     resetProgress,
     setLocalData,
-    setLocalSuccess
+    readLocalData,
   };
 };
 

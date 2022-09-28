@@ -14,7 +14,7 @@ import { GAME_MODE, PAGE } from '~/utils/interfaces';
 import './Game.less';
 
 const Game: Component = () => {
-  const { gameMode, setStep, difficulty, localData } = useAppData;
+  const { gameMode, setStep, difficulty, localData, readLocalData } = useAppData;
   const { handleRefresh, gameStatus, leftCount, gameTime } = useGameData;
 
   const getTime = () => {
@@ -45,14 +45,22 @@ const Game: Component = () => {
       </Show>
 
       <div class="header">
-        <RiSystemArrowLeftSLine class="icon-back" onClick={() => setStep(PAGE.HOME)} />
+        <RiSystemArrowLeftSLine
+          class="icon-back"
+          onClick={() => {
+            readLocalData();
+            setStep(PAGE.HOME);
+          }}
+        />
         <div class="center">
           <span class="title">
-            {gameMode() === GAME_MODE.CAREER ? `第 ${localData().level} 关` : `难度：${difficulty()}`}
+            {gameMode() === GAME_MODE.CAREER
+              ? `第 ${localData().level} 关`
+              : `难度：${difficulty()}`}
           </span>
           <div class="info">
             <div class="time">
-              <RiSystemTimerFlashLine color="#D2691E " />
+              <RiSystemTimerFlashLine color="#D2691E" />
               <span class="info-desc">{getTime()}</span>
             </div>
             <Show when={localData().leftCountShow}>

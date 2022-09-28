@@ -7,7 +7,7 @@ import { FaSolidHeartPulse } from 'solid-icons/fa';
 import './Result.less';
 
 const Result: Component = () => {
-  const { localData, setStep, gameMode, resetProgress, setLocalData, setLocalSuccess } = useAppData;
+  const { localData, setStep, gameMode, resetProgress, setLocalData } = useAppData;
   const { gameStatus, setGameStatus, handleRefresh, doStorage } = useGameData;
 
   return (
@@ -20,6 +20,7 @@ const Result: Component = () => {
               class="primary"
               onClick={() => {
                 setLocalData(pre => ({ ...pre, level: pre.level + 1 }));
+                handleRefresh();
               }}
             >
               下一关
@@ -57,7 +58,7 @@ const Result: Component = () => {
             onClick={() => {
               if (gameMode() === GAME_MODE.CAREER) {
                 if (gameStatus() === GAME_STATUS.SUCCESS) {
-                  setLocalSuccess();
+                  setLocalData(pre => ({ ...pre, level: pre.level + 1 }));
                 } else {
                   resetProgress();
                 }

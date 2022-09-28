@@ -16,8 +16,7 @@ import { ITile, tileKey, TILE_STATUS, TILE_TEXT_MAP } from '~/utils/interfaces';
 export const SIDE_MIN = 3;
 export const SIDE_MAX = 7;
 export const SIZE = 50;
-export const GRID = 4;
-
+const GRID = 4;
 
 const getCol = (pos: number, side: number) => (pos ? pos % side : 0);
 const getRow = (pos: number, side: number) => (pos ? ~~(pos / side) : 0);
@@ -76,10 +75,10 @@ export default (difficulty: Accessor<number>, side: Accessor<number>) => {
   // 由于采用相邻层内有解的算法，所以保证层数为双数，代码更为简单，否则还要对单数做特殊处理
   const level = Math.ceil(difficulty() / 2) * 2;
 
-  // 挑选元素的种类，与边长成正比
+  // 挑选元素的种类数，与难度成正比
   const keyList = sampleSize(
     Object.keys(TILE_TEXT_MAP) as tileKey[],
-    Math.min(~~(side() ** 2 / 2), size(TILE_TEXT_MAP))
+    ~~(Math.sqrt(difficulty()) * 10)
   );
   for (let zIndex = 0; zIndex < level; zIndex++) {
     const preList = res[zIndex - 1];
@@ -88,7 +87,7 @@ export default (difficulty: Accessor<number>, side: Accessor<number>) => {
       const preGridIndex = preList?.find(it => it.position === index)?.gridIndex || -1;
       const gridIndex = getGridIndex(list, index, preGridIndex);
       // 密度：元素生成概率，与难度成正比，无限趋近1
-      const density = Math.random() > 1 - 2 / Math.sqrt(difficulty());
+      const density = Math.random() > 1 - 1 / Math.pow(difficulty(), 1 / 5);
       if (gridIndex !== undefined && density) {
         // 确保相邻层内有解
         let key: tileKey;

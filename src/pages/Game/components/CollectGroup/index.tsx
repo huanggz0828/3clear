@@ -6,7 +6,7 @@ import useGameData from '~/context/useGameData';
 import useAppData from '~/context/useAppData';
 
 const CollectGroup = () => {
-  const { localData, gameMode, setLocalSuccess } = useAppData;
+  const { localData, gameMode } = useAppData;
   let {
     collectList,
     setCollectList,
@@ -42,7 +42,10 @@ const CollectGroup = () => {
           setGameStatus(GAME_STATUS.SUCCESS);
           clearTimer();
           if (gameMode() === GAME_MODE.CAREER) {
-            setLocalSuccess();
+            localStorage.setItem(
+              'localData',
+              JSON.stringify({ ...localData(), level: localData().level + 1 })
+            );
           }
         }
       },
