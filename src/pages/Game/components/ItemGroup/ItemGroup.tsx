@@ -1,5 +1,5 @@
 import { ImShuffle, ImUndo2, ImUpload } from 'solid-icons/im';
-import { assign, last, random, sortBy, takeRight, dropRight, isEmpty } from 'lodash';
+import { assign, last, random, sortBy } from 'lodash';
 import useGameData from '~/context/useGameData';
 import useAppData from '~/context/useAppData';
 import { TILE_STATUS } from '~/utils/interfaces';

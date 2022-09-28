@@ -1,4 +1,4 @@
-import { Component, Match, Show, Switch } from 'solid-js';
+import { Component, Match, Switch } from 'solid-js';
 
 import useAppData from './context/useAppData';
 import Game from './pages/Game';

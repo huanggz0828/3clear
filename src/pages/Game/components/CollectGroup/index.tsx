@@ -1,4 +1,4 @@
-import { assign, cloneDeep, isEmpty, maxBy, orderBy, times } from 'lodash';
+import { assign, cloneDeep, isEmpty, maxBy, orderBy } from 'lodash';
 import { createEffect, For, on } from 'solid-js';
 import { TransitionGroup } from 'solid-transition-group';
 import { GAME_MODE, GAME_STATUS, tileKey } from '~/utils/interfaces';
@@ -6,7 +6,7 @@ import useGameData from '~/context/useGameData';
 import useAppData from '~/context/useAppData';
 
 const CollectGroup = () => {
-  const { localData, gameMode } = useAppData;
+  const { localData, gameMode, setLocalSuccess } = useAppData;
   let {
     collectList,
     setCollectList,
@@ -42,7 +42,7 @@ const CollectGroup = () => {
           setGameStatus(GAME_STATUS.SUCCESS);
           clearTimer();
           if (gameMode() === GAME_MODE.CAREER) {
-            localStorage.setItem('localData', JSON.stringify({...localData(), level: localData().level + 1}));
+            setLocalSuccess();
           }
         }
       },

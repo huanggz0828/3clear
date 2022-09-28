@@ -39,6 +39,13 @@ const createAppData = () => {
     localStorage.setItem('localData', JSON.stringify(DEFAULT_LOCAL_DATA));
   };
 
+  const setLocalSuccess = () => {
+    localStorage.setItem(
+      'localData',
+      JSON.stringify({ ...localData(), level: localData().level + 1 })
+    );
+  }
+
   return {
     gameMode,
     setGameMode,
@@ -49,6 +56,7 @@ const createAppData = () => {
     localData,
     resetProgress,
     setLocalData,
+    setLocalSuccess
   };
 };
 
