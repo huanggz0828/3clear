@@ -19,9 +19,9 @@
         }
     }
 
-    .content {
-        width: 300px;
-        height: 400px;
+    .modal-content {
+        width: 350px;
+        height: 500px;
         margin-bottom: 80px;
         background: #fff;
         border-radius: 15px;
@@ -31,19 +31,25 @@
         align-items: center;
         justify-content: space-evenly;
         animation: contentAnimation .3s ease;
+
         h1 {
             font-size: 48px;
         }
+
         .btn-group {
             display: flex;
             flex-direction: column;
+
             button {
+                align-items: center;
                 width: 180px;
                 height: 60px;
                 border-radius: 15px;
                 font-size: 28px;
-                &:first-child {
-                    margin-bottom: 30px;
+                margin-bottom: 20px;
+
+                .text {
+                    margin-left: 5px;
                 }
             }
         }

@@ -1,43 +1,86 @@
-import { Component } from 'solid-js';
+import { Component, Show } from 'solid-js';
 import { FaSolidPlus, FaSolidMinus } from 'solid-icons/fa';
+import useAppData from '~/context/useAppData';
+import { GAME_MODE, PAGE } from '~/utils/interfaces';
+
 import './Home.less';
-import useAppData from '~/utils/useAppData';
 
 const Home: Component = () => {
-  const { setStep, difficulty, setDifficulty } = useAppData;
+  const { localData, gameMode, setGameMode, setStep, difficulty, setDifficulty } = useAppData;
+
   return (
     <div class="home">
       <h1 class="title">
         <strong>3</strong>Clear
       </h1>
-      <span class="difficulty">难度</span>
-      <div class="difficulty-set">
+
+      <Show when={gameMode() === GAME_MODE.CAREER}>
+        <div class="progress">
+          当前进度: {localData().level > 1 ? `第 ${localData().level} 关` : '无进度'}
+        </div>
         <button
-          class="warning"
+          class="start primary"
           onClick={() => {
-            setDifficulty(pre => Math.max(pre - 1, 1));
+            setGameMode(GAME_MODE.CAREER);
+            setStep(PAGE.GAME);
           }}
         >
-          <FaSolidMinus />
+          {localData().level > 1 ? '继 续' : '开 始'} 游 戏
         </button>
-        <div class="display">{difficulty()}</div>
         <button
-          class="warning"
+          class="start primary"
           onClick={() => {
-            setDifficulty(pre => Math.min(pre + 1, 100));
+            setGameMode(GAME_MODE.FREE);
           }}
         >
-          <FaSolidPlus />
+          自 由 模 式
         </button>
+      </Show>
+
+      <Show when={gameMode() === GAME_MODE.FREE}>
+        <span class="difficulty">难度</span>
+        <div class="difficulty-set">
+          <button
+            class="warning"
+            onClick={() => {
+              setDifficulty(pre => Math.max(pre - 1, 1));
+            }}
+          >
+            <FaSolidMinus />
+          </button>
+          <div class="display">{difficulty()}</div>
+          <button
+            class="warning"
+            onClick={() => {
+              setDifficulty(pre => pre + 1);
+            }}
+          >
+            <FaSolidPlus />
+          </button>
+        </div>
+
+        <button
+          class="start primary"
+          onClick={() => {
+            setStep(PAGE.GAME);
+          }}
+        >
+          开 始 游 戏
+        </button>
+        <button
+          class="start primary"
+          onClick={() => {
+            setGameMode(GAME_MODE.CAREER);
+          }}
+        >
+          返 回
+        </button>
+      </Show>
+
+      <div class="footer">
+        <span>version: v1.0.0</span>
+        <span>by: huang-guanzhong</span>
       </div>
-      <button
-        class="start primary"
-        onClick={() => {
-          setStep('game');
-        }}
-      >
-        开 始 游 戏
-      </button>
     </div>
   );
 };

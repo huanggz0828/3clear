@@ -11,7 +11,7 @@ import {
   uniqueId,
 } from 'lodash';
 import { Accessor } from 'solid-js';
-import { ITile, tileKey, TILE_STATUS, TILE_TEXT_MAP } from '~/utils/constants';
+import { ITile, tileKey, TILE_STATUS, TILE_TEXT_MAP } from '~/utils/interfaces';
 
 export const SIDE_MIN = 3;
 export const SIDE_MAX = 7;

@@ -1,3 +1,23 @@
+export enum PAGE {
+  HOME,
+  GAME,
+}
+
+export interface ILocalData {
+  level: number;
+  collectMax: number;
+  gobBackCount: number;
+  storageCount: number;
+  shuffleCount: number;
+  reviveCount: number;
+  leftCountShow: boolean;
+}
+
+export enum GAME_MODE {
+  CAREER,
+  FREE,
+}
+
 export const TILE_TEXT_MAP = {
   hotFace: '🥵',
   lemon: '🍋',
@@ -39,8 +59,8 @@ export interface ITile {
 export interface ICollect extends ITile {
   startX: number;
   startY: number;
-  step: number;
-  el?: HTMLDivElement
+  step?: number;
+  el?: HTMLDivElement;
 }
 
 export enum GAME_STATUS {

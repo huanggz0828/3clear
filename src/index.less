@@ -23,11 +23,29 @@ html {
 
         button {
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           transition: .2s;
           box-shadow: 0 0 4px 0 #AAAAAA;
+          position: relative;
 
           &:hover {
             box-shadow: 0 0 6px 0 #AAAAAA;
+          }
+
+          .item-num {
+            font-size: 18px;
+            line-height: 24px;
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 24px;
+            padding: 0 6px;
+            height: 24px;
+            border-radius: 12px;
+            background: red;
+            box-shadow: 0 0 4px 0 #999999;
           }
         }
 
@@ -37,10 +55,6 @@ html {
           border-radius: 15px;
           background: @color-warning;
           box-shadow: 0 0 8px 0 #AAAAAA;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
 
           &:hover {
             background: tint(@color-warning, 20%);

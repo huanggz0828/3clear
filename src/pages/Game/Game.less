@@ -4,9 +4,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: 40px;
 
     .header {
-        z-index: 103;
         width: 100%;
         display: flex;
         align-items: center;
@@ -15,11 +15,50 @@
         border-radius: 5px 5px 10px 10px;
         background: #ffffff;
         box-shadow: 0 0 8px 0 #bbbbbb;
+        margin-bottom: 40px;
 
-        .difficulty {
-            font-size: 20px;
-            color: #a0a0a0;
+        .center {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+            width: 220px;
+
+            .title {
+                font-size: 22px;
+                color: #141E31;
+            }
+
+            .info {
+                margin-top: 10px;
+                padding: 0 10px;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+
+                div {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .time {
+                    font-size: 22px;
+                }
+
+                .left-count {
+                    font-size: 20px;
+                }
+
+                .info-desc {
+                    margin-left: 5px;
+                    font-size: 18px;
+                    color: @color-desc;
+                }
+            }
         }
+
+
 
         .icon-back {
             cursor: pointer;
@@ -39,6 +78,16 @@
             transition: .2s;
             font-size: 32px;
         }
+    }
+
+
+
+    .content {
+        .wh100();
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
     }
 
     .tile {
@@ -121,33 +170,9 @@
         }
     }
 
-    .footer {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-
-        .btn-group {
-            margin: 50px 0 50px 0;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-evenly;
-    
-            button {
-                width: 88px;
-                height: 88px;
-                font-size: 50px;
-                border-radius: 30px !important;
-            }
-        }
-    }
-
     .storage-group {
         display: flex;
         height: 49px;
-        margin-bottom: 30px;
 
         .storage-transition-enter-active {
             transform: translateY(30px);
@@ -169,10 +194,10 @@
 
     .collect-group {
         display: flex;
+        flex-wrap: wrap;
+        align-content: center;
         justify-content: center;
-        align-items: center;
         position: relative;
-        height: 80px;
         padding: 0 20px;
         width: calc(100% - 30px);
         box-shadow: 0 0 8px 0 #a0a0a0;
@@ -180,11 +205,12 @@
         border-radius: 30px;
 
         .tile-group {
-            display: flex;
+            width: 350px;
             transition: .2s;
 
             .tile {
                 margin: 2px;
+                display: inline-block;
             }
 
             @keyframes changeOpacity {

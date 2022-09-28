@@ -1,18 +1,23 @@
 import { For } from 'solid-js';
 import { TransitionGroup } from 'solid-transition-group';
-import { ITile } from '~/utils/constants';
-import useGameData from '../../useGameData';
+import { ITile } from '~/utils/interfaces';
+import useGameData from '~/context/useGameData';
+import useAppData from '~/context/useAppData';
 
 const StorageGroup = () => {
-  const { storageList, setStorageList, addCollect } = useGameData;
+  const { localData } = useAppData;
+  const { storageList, setStorageList, addCollect, collectList } = useGameData;
 
-  const handleTileClick = (
+  const handleTileClick = async (
     el: MouseEvent & {
       currentTarget: HTMLDivElement;
       target: Element;
     },
     item: ITile
   ) => {
+    if (collectList().length === localData().collectMax) {
+      return;
+    }
     const { x, y } = el.target.getBoundingClientRect();
     setStorageList(pre => pre.filter(it => item.id !== it.id));
     addCollect(x, y, item);

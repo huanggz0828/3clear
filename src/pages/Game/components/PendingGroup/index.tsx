@@ -1,20 +1,21 @@
-import { findLastIndex } from 'lodash';
 import { For, Show } from 'solid-js';
-import { ITile, TILE_STATUS } from '~/utils/constants';
-import { SIZE } from '../../initTile';
-import useGameData from '../../useGameData';
+import { ITile, TILE_STATUS } from '~/utils/interfaces';
+import useGameData from '~/context/useGameData';
+import useAppData from '~/context/useAppData';
 
 const PendingGroup = () => {
+  const { localData } = useAppData;
   const {
     getDisabled,
     sideLength,
     tileList,
     setTileList,
+    collectList,
     addCollect,
     setPendingGroupRef,
   } = useGameData;
 
-  const handleTileClick = (
+  const handleTileClick = async (
     el: MouseEvent & {
       currentTarget: HTMLDivElement;
       target: Element;
@@ -22,13 +23,16 @@ const PendingGroup = () => {
     item: ITile,
     index: number
   ) => {
+    if (collectList().length === localData().collectMax) {
+      return;
+    }
     const { x, y } = el.target.getBoundingClientRect();
     setTileList(pre => {
       const _pre = [...pre];
       Object.assign(_pre[item.zIndex][index], { status: TILE_STATUS.COLLECT });
       return _pre;
     });
-    addCollect(x,y,item)
+    addCollect(x, y, item);
   };
 
   return (
