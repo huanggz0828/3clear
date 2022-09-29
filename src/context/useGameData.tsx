@@ -1,18 +1,14 @@
 import { dropRight, findLastIndex, isEmpty, takeRight } from 'lodash';
 import useAppData from '~/context/useAppData';
 import { GAME_MODE, GAME_STATUS, ICollect, ITile, PAGE, TILE_STATUS } from '~/utils/interfaces';
-import { createEffect, createMemo, createRoot, createSignal, onCleanup } from 'solid-js';
+import { createEffect, on, createRoot, createSignal, onCleanup } from 'solid-js';
 import initTile, { SIDE_MAX, SIDE_MIN, SIZE } from '~/utils/initTile';
 
 const GAP = 2;
 
 const createGameData = () => {
   const { gameMode, difficulty, localData, step } = useAppData;
-  const level = createMemo(
-    () => (gameMode() === GAME_MODE.CAREER ? localData().level : difficulty()),
-    [gameMode(), localData().level]
-  );
-
+  const level = () => (gameMode() === GAME_MODE.CAREER ? localData().level : difficulty());
   const side = () => Math.min(SIDE_MAX, ~~(level() / 2) + SIDE_MIN);
   const sideLength = () => (side() + 1) * 50;
 
@@ -32,7 +28,7 @@ const createGameData = () => {
   const leftCount = () => {
     const pendingCount = tileList()
       .flat()
-      .filter(tile => tile.status === TILE_STATUS.PENDING).length;
+      .filter(tile => tile.status() === TILE_STATUS.PENDING).length;
     return pendingCount + collectList().length + storageList().length;
   };
 
@@ -57,15 +53,21 @@ const createGameData = () => {
     timer && clearInterval(timer);
   };
 
-  createEffect(() => {
-    if (step() === PAGE.GAME) {
-      startTiming();
-      handleClear();
-      setTileList(initTile(level, side));
-    } else {
-      clearTimer();
-    }
-  });
+  createEffect(
+    on(
+      [step, level, side],
+      () => {
+        if (step() === PAGE.GAME) {
+          startTiming();
+          handleClear();
+          setTileList(initTile(level, side));
+        } else {
+          clearTimer();
+        }
+      },
+      { defer: true }
+    )
+  );
 
   onCleanup(() => clearTimer());
 
@@ -78,7 +80,7 @@ const createGameData = () => {
       const level = tileList()[i];
       for (let j = 0; j < level.length; j++) {
         const levelItem = level[j];
-        if (levelItem.status !== TILE_STATUS.PENDING) continue;
+        if (levelItem.status() !== TILE_STATUS.PENDING) continue;
         const { left: _left, top: _top } = levelItem;
         const _right = _left + SIZE - GAP;
         const _bottom = _top + SIZE - GAP;
@@ -93,7 +95,7 @@ const createGameData = () => {
   const addCollect = (x: number, y: number, item: ITile) => {
     setCollectList(pre => {
       const _pre = [...pre];
-      const sameIndex = findLastIndex(_pre, it => it.key === item.key);
+      const sameIndex = findLastIndex(_pre, it => it.key() === item.key());
       const startY = y - collectGroupRef()!.getBoundingClientRect().top;
       const startX = x - SIZE;
 
@@ -163,7 +165,7 @@ const createGameData = () => {
     gameTime,
     waitAnimateQueue,
     doStorage,
-    clearTimer
+    clearTimer,
   };
 };
 

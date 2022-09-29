@@ -8,7 +8,8 @@ import { SiGitee } from 'solid-icons/si';
 import './Home.less';
 
 const Home: Component = () => {
-  const { localData, gameMode, setGameMode, setStep, difficulty, setDifficulty } = useAppData;
+  const { localData, gameMode, setGameMode, setStep, difficulty, setDifficulty, resetProgress } =
+    useAppData;
 
   return (
     <div class="home">
@@ -30,6 +31,18 @@ const Home: Component = () => {
           >
             {localData().level > 1 ? '继 续' : '开 始'} 游 戏
           </button>
+          <Show when={localData().level > 1}>
+            <button
+              class="start primary"
+              onClick={() => {
+                resetProgress();
+                setGameMode(GAME_MODE.CAREER);
+                setStep(PAGE.GAME);
+              }}
+            >
+              重 新 开 始
+            </button>
+          </Show>
           <button
             class="start primary"
             onClick={() => {

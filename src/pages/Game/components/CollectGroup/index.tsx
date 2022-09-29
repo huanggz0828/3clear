@@ -27,9 +27,9 @@ const CollectGroup = () => {
         if (!isEmpty(aq)) return;
         orderBy(collectList(), 'step', 'desc').reduce(
           (res: Partial<Record<tileKey, string[]>>, item) => {
-            res[item.key] ? res[item.key]!.push(item.id) : (res[item.key] = [item.id]);
-            if (res[item.key]?.length === 3) {
-              setCollectList(pre => pre.filter(it => !res[item.key]!.includes(it.id)));
+            res[item.key()] ? res[item.key()]!.push(item.id) : (res[item.key()] = [item.id]);
+            if (res[item.key()]?.length === 3) {
+              setCollectList(pre => pre.filter(it => !res[item.key()]!.includes(it.id)));
             }
             return res;
           },
@@ -37,6 +37,7 @@ const CollectGroup = () => {
         );
         if (collectList().length >= localData().collectMax) {
           setGameStatus(GAME_STATUS.FAIL);
+          clearTimer();
         }
         if (!leftCount()) {
           setGameStatus(GAME_STATUS.SUCCESS);
@@ -70,8 +71,8 @@ const CollectGroup = () => {
                 { transform: `translate(0px,0px)` },
               ],
               {
-                duration: 300,
-                easing: 'ease',
+                duration: 250,
+                easing: 'ease-in-out',
               }
             );
             const id = el.dataset.id!;

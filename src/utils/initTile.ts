@@ -10,7 +10,7 @@ import {
   times,
   uniqueId,
 } from 'lodash';
-import { Accessor } from 'solid-js';
+import { Accessor, createSignal } from 'solid-js';
 import { ITile, tileKey, TILE_STATUS, TILE_TEXT_MAP } from '~/utils/interfaces';
 
 export const SIDE_MIN = 3;
@@ -26,10 +26,10 @@ export default (difficulty: Accessor<number>, side: Accessor<number>) => {
   const getGridIndex = (currentList: ITile[], position: number, ignore: number = -1) => {
     const row = getRow(position, side());
     const col = getCol(position, side());
-    const topLeft = currentList.find(item => item.position === getPosByCR(col - 1, row - 1));
-    const top = currentList.find(item => item.position === getPosByCR(col, row - 1));
-    const topRight = currentList.find(item => item.position === getPosByCR(col + 1, row - 1));
-    const left = currentList.find(item => item.position === getPosByCR(col - 1, row));
+    const topLeft = currentList.find(item => item.realIndex === getPosByCR(col - 1, row - 1));
+    const top = currentList.find(item => item.realIndex === getPosByCR(col, row - 1));
+    const topRight = currentList.find(item => item.realIndex === getPosByCR(col + 1, row - 1));
+    const left = currentList.find(item => item.realIndex === getPosByCR(col - 1, row));
     let [minRow, minCol] = [0, 0];
     if (topLeft) {
       const _row = getRow(topLeft.gridIndex, GRID);
@@ -57,11 +57,11 @@ export default (difficulty: Accessor<number>, side: Accessor<number>) => {
     return sample(gridArr)!;
   };
 
-  const getTransform = (position: number, gridIndex: number) => {
+  const getTransform = (realIndex: number, gridIndex: number) => {
     const gridLength = GRID ? SIZE / GRID : 0;
-    const left = getCol(position, side()) * SIZE;
+    const left = getCol(realIndex, side()) * SIZE;
     const gridLeft = getCol(gridIndex, GRID) * gridLength;
-    const top = getRow(position, side()) * SIZE;
+    const top = getRow(realIndex, side()) * SIZE;
     const gridTop = getRow(gridIndex, GRID) * gridLength;
     return {
       left: left + gridLeft,
@@ -84,31 +84,36 @@ export default (difficulty: Accessor<number>, side: Accessor<number>) => {
     const preList = res[zIndex - 1];
     const list: ITile[] = [];
     for (let index = 0; index < side() ** 2; index++) {
-      const preGridIndex = preList?.find(it => it.position === index)?.gridIndex || -1;
+      const preGridIndex = preList?.find(it => it.realIndex === index)?.gridIndex || -1;
       const gridIndex = getGridIndex(list, index, preGridIndex);
       // 密度：元素生成概率，与难度成正比，无限趋近1
-      const density = Math.random() > 1 - 1 / Math.pow(difficulty(), 1 / 5);
+      const density = Math.random() > 1 - 1 / Math.pow(difficulty(), 1 / 10);
       if (gridIndex !== undefined && density) {
         // 确保相邻层内有解
-        let key: tileKey;
+        let _key: tileKey;
         if (remainder.length) {
-          key = remainder.splice(random(0, remainder.length - 1), 1)[0];
+          _key = remainder.splice(random(0, remainder.length - 1), 1)[0];
         } else {
           // 去除最高频元素的keyList，确保每个元素频率接近
           const lessKeyList = initial(sortBy(keyList, key => keyCount[key]));
-          key = sample(lessKeyList)!;
+          _key = sample(lessKeyList)!;
         }
 
-        keyCount[key] = (keyCount[key] || 0) + 1;
+        keyCount[_key] = (keyCount[_key] || 0) + 1;
+
+        const [key, setKey] = createSignal(_key);
+        const [status, setStatus] = createSignal(TILE_STATUS.PENDING);
 
         list.push({
           id: uniqueId(),
-          text: TILE_TEXT_MAP[key],
-          position: index,
-          status: TILE_STATUS.PENDING,
+          realIndex: index,
           gridIndex,
           zIndex,
+          text: () => TILE_TEXT_MAP[key()],
+          status,
+          setStatus,
           key,
+          setKey,
           ...getTransform(index, gridIndex),
         });
       }
@@ -129,7 +134,7 @@ export default (difficulty: Accessor<number>, side: Accessor<number>) => {
       times(count % 3, () => {
         let i = res.length - 1;
         while (i >= 0) {
-          const deleteIndex = findLastIndex(res[i], item => item.key === key);
+          const deleteIndex = findLastIndex(res[i], item => item.key() === key);
           if (deleteIndex !== -1) {
             res[i].splice(deleteIndex, 1);
             break;

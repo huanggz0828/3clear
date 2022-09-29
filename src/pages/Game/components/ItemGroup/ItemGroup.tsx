@@ -1,8 +1,9 @@
 import { ImShuffle, ImUndo2, ImUpload } from 'solid-icons/im';
-import { assign, last, random, shuffle, sortBy } from 'lodash';
+import { last, random, sortBy } from 'lodash';
 import useGameData from '~/context/useGameData';
 import useAppData from '~/context/useAppData';
-import { TILE_STATUS } from '~/utils/interfaces';
+import { TILE_STATUS, TILE_TEXT_MAP } from '~/utils/interfaces';
+import { batch } from 'solid-js';
 
 import './ItemGroup.less';
 
@@ -11,7 +12,6 @@ const ItemGroup = () => {
     tileList,
     collectList,
     setCollectList,
-    setTileList,
     storageList,
     doStorage,
     pendingGroupRef,
@@ -40,12 +40,8 @@ const ItemGroup = () => {
     );
     await a.finished;
     setCollectList(pre => pre.filter(item => item.id !== backItem.id));
-    setTileList(pre => {
-      const _pre = [...pre];
-      const index = _pre[backItem.zIndex].findIndex(item => item.id === backItem.id);
-      assign(_pre[backItem.zIndex][index], { status: TILE_STATUS.PENDING });
-      return _pre;
-    });
+    const index = tileList()[backItem.zIndex].findIndex(item => item.id === backItem.id);
+    tileList()[backItem.zIndex][index].setStatus(TILE_STATUS.PENDING);
   };
 
   const handleStorage = async () => {
@@ -73,22 +69,18 @@ const ItemGroup = () => {
     setTimeout(() => {
       const flatArr = tileList()
         .flat()
-        .filter(item => item.status === TILE_STATUS.PENDING);
-      setTileList(pre => {
-        return pre.map(levelItem =>
-          levelItem.map(item => {
-            if (item.status !== TILE_STATUS.PENDING) {
-              return item;
-            }
-            const sampleItem = flatArr.splice(random(0, flatArr.length - 1), 1)[0];
-            return {
-              ...item,
-              key: sampleItem.key,
-              text: sampleItem.text,
-            };
-          })
-        );
-      });
+        .filter(item => item.status() === TILE_STATUS.PENDING)
+        .map(item => item.key());
+
+      tileList().forEach(levelItem =>
+        levelItem.forEach(item => {
+          if (item.status() !== TILE_STATUS.PENDING) {
+            return true;
+          }
+          const sampleKey = flatArr.splice(random(0, flatArr.length - 1), 1)[0];
+          item.setKey(sampleKey);
+        })
+      );
     }, 1300);
   };
   return (

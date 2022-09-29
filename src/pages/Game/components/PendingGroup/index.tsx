@@ -9,7 +9,6 @@ const PendingGroup = () => {
     getDisabled,
     sideLength,
     tileList,
-    setTileList,
     collectList,
     addCollect,
     setPendingGroupRef,
@@ -27,11 +26,7 @@ const PendingGroup = () => {
       return;
     }
     const { x, y } = el.target.getBoundingClientRect();
-    setTileList(pre => {
-      const _pre = [...pre];
-      Object.assign(_pre[item.zIndex][index], { status: TILE_STATUS.COLLECT });
-      return _pre;
-    });
+    tileList()[item.zIndex][index].setStatus(TILE_STATUS.COLLECT)
     addCollect(x, y, item);
   };
 
@@ -53,7 +48,7 @@ const PendingGroup = () => {
                     disabled: getDisabled(item),
                   }}
                   style={{
-                    display: item.status === TILE_STATUS.PENDING ? 'block' : 'none',
+                    display: item.status() === TILE_STATUS.PENDING ? 'block' : 'none',
                     transform: `translate(${item.left}px, ${item.top}px)`,
                   }}
                   onClick={el => {

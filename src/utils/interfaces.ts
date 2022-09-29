@@ -1,3 +1,5 @@
+import { Accessor, Setter } from 'solid-js';
+
 export enum PAGE {
   HOME,
   GAME,
@@ -80,15 +82,17 @@ export enum TILE_STATUS {
 }
 
 export interface ITile {
-  key: tileKey;
-  text: string;
-  position: number;
+  id: string;
+  text: () => string;
+  realIndex: number;
+  status: Accessor<TILE_STATUS>;
+  setStatus: Setter<TILE_STATUS>;
   gridIndex: number;
   zIndex: number;
-  id: string;
-  left: number;
-  top: number;
-  status?: TILE_STATUS;
+  key: Accessor<tileKey>;
+  setKey: Setter<tileKey>;
+  left: number,
+  top: number
 }
 
 export interface ICollect extends ITile {
