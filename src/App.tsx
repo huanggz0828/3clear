@@ -9,7 +9,6 @@ const App: Component = () => {
   const { step } = useAppData;
   return (
     <div class="app">
-      测试
       <Switch>
         <Match when={step() === PAGE.HOME}>
           <Home />
