@@ -39,7 +39,7 @@ stages:
         # 上游上传制品任务的产出
         dependArtifact: output
         # 发布制品版本号
-        version: '1.0.0.0'
+        version: '1.0.0'
         # 是否开启版本号自增，默认开启
         autoIncrement: true
 triggers:
