@@ -12,18 +12,15 @@ export default ({ mode }: any) =>
         'root': path.resolve(__dirname, './'),
       },
     },
-    // css: {
-    //   preprocessorOptions: {
-    //     less: {
-    //       javascriptEnabled: true,
-    //       additionalData: `@import "${path.resolve(__dirname, 'src/assets/styles/base.less')}";`,
-    //     },
-    //   },
-    // },
+    css: {
+      preprocessorOptions: {
+        less: {
+          javascriptEnabled: true,
+          additionalData: `@import "${path.resolve(__dirname, 'src/assets/styles/base.less')}";`,
+        },
+      },
+    },
     server: {
       port: 8080,
-    },
-    build: {
-      target: 'esnext',
     },
   });
