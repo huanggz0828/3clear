@@ -1,7 +1,12 @@
 {
   "name": "3clear",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
+  "author": "huang-guanzhong",
+  "repository":{
+    "type": "gitee",
+    "url": "https://gitee.com/huang-guanzhong/3clear"
+  },
   "scripts": {
     "start": "vite --host",
     "dev": "vite --host",
