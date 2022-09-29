@@ -23,4 +23,7 @@ export default ({ mode }: any) =>
     server: {
       port: 8080,
     },
+    build: {
+      target: 'esnext',
+    },
   });
