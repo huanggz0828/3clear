@@ -2,8 +2,8 @@ import { ImShuffle, ImUndo2, ImUpload } from 'solid-icons/im';
 import { last, random, sortBy } from 'lodash';
 import useGameData from '~/context/useGameData';
 import useAppData from '~/context/useAppData';
-import { TILE_STATUS, TILE_TEXT_MAP } from '~/utils/interfaces';
-import { batch } from 'solid-js';
+import { tileKey, TILE_STATUS } from '~/utils/interfaces';
+import Solution from '~/utils/Solution';
 
 import './ItemGroup.less';
 
@@ -72,17 +72,29 @@ const ItemGroup = () => {
         .filter(item => item.status() === TILE_STATUS.PENDING)
         .map(item => item.key());
 
-      tileList().forEach(levelItem =>
+      const { remainder, addKeyCount, getRemainKey, setSolution } = new Solution();
+      tileList().forEach(levelItem => {
         levelItem.forEach(item => {
           if (item.status() !== TILE_STATUS.PENDING) {
             return true;
           }
-          const sampleKey = flatArr.splice(random(0, flatArr.length - 1), 1)[0];
-          item.setKey(sampleKey);
-        })
-      );
+          let key: tileKey;
+          if (remainder.length) {
+            key = getRemainKey();
+            const index = flatArr.findIndex(k => k === key);
+            flatArr.splice(index, 1);
+          } else {
+            key = flatArr.splice(random(0, flatArr.length - 1), 1)[0];
+          }
+          addKeyCount(key);
+          item.setKey(key);
+        });
+        // 确保相邻层内有解
+        setSolution();
+      });
     }, 1300);
   };
+
   return (
     <div class="item-btn-group">
       <button class="go-back warning" onClick={handleGoBack}>

@@ -26,7 +26,7 @@ const PendingGroup = () => {
       return;
     }
     const { x, y } = el.target.getBoundingClientRect();
-    tileList()[item.zIndex][index].setStatus(TILE_STATUS.COLLECT)
+    tileList()[item.zIndex][index].setStatus(TILE_STATUS.COLLECT);
     addCollect(x, y, item);
   };
 

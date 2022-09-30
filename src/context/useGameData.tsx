@@ -1,7 +1,7 @@
 import { dropRight, findLastIndex, isEmpty, takeRight } from 'lodash';
 import useAppData from '~/context/useAppData';
 import { GAME_MODE, GAME_STATUS, ICollect, ITile, PAGE, TILE_STATUS } from '~/utils/interfaces';
-import { createEffect, on, createRoot, createSignal, onCleanup } from 'solid-js';
+import { createEffect, createRoot, createSignal, onCleanup, untrack } from 'solid-js';
 import initTile, { SIDE_MAX, SIDE_MIN, SIZE } from '~/utils/initTile';
 
 const GAP = 2;
@@ -53,21 +53,17 @@ const createGameData = () => {
     timer && clearInterval(timer);
   };
 
-  createEffect(
-    on(
-      [step, level, side],
-      () => {
-        if (step() === PAGE.GAME) {
-          startTiming();
-          handleClear();
-          setTileList(initTile(level, side));
-        } else {
-          clearTimer();
-        }
-      },
-      { defer: true }
-    )
-  );
+  console.log(1);
+
+  createEffect(() => {
+    if (step() === PAGE.GAME) {
+      startTiming();
+      handleClear();
+      setTileList(initTile(untrack(level), untrack(side)));
+    } else {
+      clearTimer();
+    }
+  });
 
   onCleanup(() => clearTimer());
 
@@ -134,7 +130,7 @@ const createGameData = () => {
 
   const handleRefresh = () => {
     handleClear();
-    setTileList(initTile(level, side));
+    setTileList(initTile(level(), side()));
   };
 
   const doStorage = () => {
