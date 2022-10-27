@@ -2,10 +2,9 @@
   "name": "3clear",
   "version": "1.0.4",
   "description": "",
-  "author": "huang-guanzhong",
+  "author": "Huang GZ",
   "repository": {
-    "type": "gitee",
-    "url": "https://gitee.com/huang-guanzhong/3clear"
+    "type": "git"
   },
   "scripts": {
     "start": "vite --host",

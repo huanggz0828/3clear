@@ -53,8 +53,6 @@ const createGameData = () => {
     timer && clearInterval(timer);
   };
 
-  console.log(1);
-
   createEffect(() => {
     if (step() === PAGE.GAME) {
       startTiming();
