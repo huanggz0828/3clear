@@ -4,7 +4,7 @@ import path from 'path';
 
 export default ({ mode }: any) =>
   defineConfig({
-    base: '/',
+    base: mode === 'production' ? 'https://huangguanzhong.xyz/' : '/',
     plugins: [solidPlugin()],
     resolve: {
       alias: {
