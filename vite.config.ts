@@ -4,12 +4,12 @@ import path from 'path';
 
 export default ({ mode }: any) =>
   defineConfig({
-    base: mode === 'production' ? 'https://huang-guanzhong.gitee.io/3clear/' : '/',
+    base: '/',
     plugins: [solidPlugin()],
     resolve: {
       alias: {
         '~': path.resolve(__dirname, 'src'),
-        'root': path.resolve(__dirname, './'),
+        root: path.resolve(__dirname, './'),
       },
     },
     css: {
