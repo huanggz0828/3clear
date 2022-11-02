@@ -1,2 +1,2 @@
 build: npm run build
-run: npm run serve --port ${LEANCLOUD_APP_PORT}
+run: vite preview --port ${LEANCLOUD_APP_PORT}
