@@ -1,2 +1,2 @@
 build: npm run build
-run: $(npm bin)/serve -c static.json -l ${LEANCLOUD_APP_PORT}
+run: npm run serve --port ${LEANCLOUD_APP_PORT}
