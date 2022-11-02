@@ -10,7 +10,7 @@
     "start": "vite --host",
     "dev": "vite --host",
     "build": "vite build",
-    "serve": "vite preview"
+    "serve": "vite preview --port ${LEANCLOUD_APP_PORT}"
   },
   "license": "MIT",
   "engines": {
