@@ -10,7 +10,7 @@
     "start": "vite --host",
     "dev": "vite --host",
     "build": "vite build",
-    "serve": "vite preview --port ${LEANCLOUD_APP_PORT}"
+    "serve": "vite preview"
   },
   "license": "MIT",
   "engines": {
@@ -26,6 +26,7 @@
     "@types/node": "^18.7.23",
     "less": "^4.1.3",
     "lodash": "^4.17.21",
+    "serve": "^14.0.1",
     "solid-icons": "^1.0.1",
     "solid-js": "^1.5.1",
     "solid-transition-group": "0.0.11"
