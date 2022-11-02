@@ -10,7 +10,8 @@
     "start": "vite --host",
     "dev": "vite --host",
     "build": "vite build",
-    "serve": "vite preview"
+    "preview": "vite preview",
+    "serve": "serve -s dist"
   },
   "license": "MIT",
   "engines": {

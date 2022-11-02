@@ -1,2 +1,1 @@
 build: npm run build
-run: $(npm bin)/serve -s dist -c static.json -l ${LEANCLOUD_APP_PORT}
