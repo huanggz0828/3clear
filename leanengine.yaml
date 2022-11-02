@@ -1,2 +1,2 @@
 build: npm run build
-run: npm run serve
+run: npm run dev
