@@ -89,10 +89,11 @@ const createGameData = () => {
   const addCollect = (x: number, y: number, item: ITile) => {
     setCollectList(pre => {
       const _pre = [...pre];
-      const sameIndex = findLastIndex(_pre, it => it.key() === item.key());
-      const startY = y - collectGroupRef()!.getBoundingClientRect().top;
-      const startX = x - SIZE;
+      const { top, left } = collectGroupRef()!.getBoundingClientRect();
+      const startY = y - top;
+      const startX = x - left - SIZE;
 
+      const sameIndex = findLastIndex(_pre, it => it.key() === item.key());
       if (sameIndex === -1) {
         _pre.push({
           ...item,
@@ -102,7 +103,7 @@ const createGameData = () => {
       } else {
         _pre.splice(sameIndex + 1, 0, {
           ...item,
-          startX: startX - sameIndex * SIZE,
+          startX: startX - (sameIndex + 1) * SIZE,
           startY,
         });
       }

@@ -4,7 +4,8 @@
   "description": "",
   "author": "Huang GZ",
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "https://github.com/huanggz0828/3clear"
   },
   "scripts": {
     "start": "vite --host",

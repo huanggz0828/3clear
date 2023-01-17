@@ -3,8 +3,7 @@ import { FaSolidPlus, FaSolidMinus } from 'solid-icons/fa';
 import useAppData, { LEVEL_MAX } from '~/context/useAppData';
 import { GAME_MODE, PAGE } from '~/utils/interfaces';
 import { version, author, repository } from 'root/package.json';
-import { SiGitee } from 'solid-icons/si';
-import { FaSolidCircleArrowUp } from 'solid-icons/fa';
+import { AiFillGithub } from 'solid-icons/ai';
 
 import './Home.less';
 
@@ -111,13 +110,12 @@ const Home: Component = () => {
       </span>
 
       <div class="footer">
-        <div class="version" onClick={() => window.location.reload()}>
+        <div class="version">
           <span>version: v{version}</span>
-          <FaSolidCircleArrowUp color="#c71d23" class="update" />
         </div>
         <div class="author" onClick={() => window.open(repository.url, '_blank')}>
           <span>by: {author}</span>
-          <SiGitee color="#c71d23" class="gitee" />
+          <AiFillGithub color='#000' class="git" />
         </div>
       </div>
     </div>
